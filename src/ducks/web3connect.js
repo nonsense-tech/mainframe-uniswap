@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {BigNumber as BN} from 'bignumber.js';
 import Web3 from 'web3';
+import MainframeSDK from '@mainframe/sdk';
+
 import ERC20_ABI from "../abi/erc20";
 import ERC20_WITH_BYTES_ABI from "../abi/erc20_symbol_bytes32";
 
@@ -115,10 +117,11 @@ export const initialize = () => (dispatch, getState) => {
       return;
     }
 
-    if (typeof window.ethereum !== 'undefined') {
+    const sdk = new MainframeSDK();
+
+    if (typeof sdk.ethereum !== 'undefined') {
       try {
-        const web3 = new Web3(window.ethereum);
-        await window.ethereum.enable();
+        const web3 = new Web3(sdk.ethereum.web3Provider);
         dispatch({
           type: INITIALIZE,
           payload: web3,
@@ -126,21 +129,11 @@ export const initialize = () => (dispatch, getState) => {
         resolve(web3);
         return;
       } catch (error) {
-        console.error('User denied access.');
+        console.error('Something went wrong.');
         dispatch({ type: INITIALIZE });
         reject();
         return;
       }
-    }
-
-    if (typeof window.web3 !== 'undefined') {
-      const web3 = new Web3(window.web3.currentProvider);
-      dispatch({
-        type: INITIALIZE,
-        payload: web3,
-      });
-      resolve(web3);
-      return;
     }
 
     dispatch({ type: INITIALIZE });
